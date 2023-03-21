@@ -1,0 +1,1 @@
+start powershell -command "& '.\gui.ps1' "
