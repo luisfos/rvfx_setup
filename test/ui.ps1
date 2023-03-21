@@ -34,17 +34,37 @@ $saveButton.Dock = [System.Windows.Forms.DockStyle]::Bottom
 $form.Controls.Add($saveButton)
 
 # Load the config file
-# $configFilePath = "C:\path\to\configfile.ini"
 $configFilePath = Join-Path $PSScriptRoot "config.ini"
-$config = New-Object System.Collections.Generic.Dictionary[string,string]
-Get-Content $configFilePath | ForEach-Object {
-    if ($_ -match "^\[(.*)\]$") {
-        $section = $matches[1]
-    }
-    elseif ($_ -match "^(.*)=(.*)$") {
-        $config["$section.$($matches[1])"] = $matches[2]
+
+if (!(Test-Path $configFilePath)) {
+    # Create default config file
+    $defaultConfig = @'
+[software1]
+C:\path\to\software1.exe
+filename1.exe
+
+[software2]
+C:\path\to\software2.exe
+filename2.exe
+'@
+    $defaultConfig | Set-Content $configFilePath
+}
+
+$config = @{}
+$configIni = Get-Content $configFilePath | Where-Object { $_ -match "^\[.*\].*=.*" } | ForEach-Object {
+    $key, $value = $_ -split "="
+    $config[$key] = $value.Trim()
+}
+
+$softwareElements = $config.GetEnumerator() | Where-Object { $_.Key -match "^\[.*\]\.filepath$" } | ForEach-Object {
+    $section = ($_.Key -split "\.")[0] -replace "^\[|\]$"
+    [PSCustomObject] @{
+        Section = $section
+        Filepath = $_.Value
+        Filename = ($config["$section.filename"])
     }
 }
+
 
 # Add existing software elements to the panel
 $softwareElements = @()
@@ -121,12 +141,22 @@ $addButton.Add_Click({
 
 # Add event handler for save button
 $saveButton.Add_Click({
+     Write-Host "The value of softwareElements is: $softwareElements"
+    Write-Host "Printing contents of `$config before clearing:"
+    foreach ($key in $config.Keys) {
+        Write-Host "${key}: $($config[$key])" # wrap $key to ${key} so the : isn't recognised as part of the variable
+    }
     $config.Clear()
     $softwareElements | ForEach-Object {
         $config[$_.Section + ".filepath"] = $_.Filepath.Text
         $config[$_.Section + ".filename"] = $_.Filename.Text
     }
     Set-Content $configFilePath ($config.GetEnumerator() | ForEach-Object { "[{0}]{1}={2}" -f ($_.Key -split ".")[0],($_.Key -split ".")[1],$_.Value })
+
+    Write-Host "Printing contents of `$config after saving changes:"
+    foreach ($key in $config.Keys) {
+        Write-Host "${key}: $($config[$key])"
+    }
     [System.Windows.Forms.MessageBox]::Show("Changes saved.", "Info")
 })
 

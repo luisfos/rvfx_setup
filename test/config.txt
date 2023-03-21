@@ -1,7 +1,0 @@
-[a]
-source=poo
-target=abc
-
-[b]
-source=hel
-target=lo
