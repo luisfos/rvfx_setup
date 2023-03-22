@@ -7,11 +7,16 @@ add run script to make the symlinks
 
 '''
 
-
 import os
+from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog
 import toml
+
+SOFT_DIRECTORY = Path(r"..\soft")
+# test = Path(SOFT_DIRECTORY)
+# test2 = test / 'example.txt'
+# print(test2.resolve())
 
 CONFIG_FILE = "config.toml"
 DEFAULT_CONFIG = """\
@@ -28,7 +33,9 @@ class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
-        self.master.geometry("900x300") # set initial size of the window
+        # self.master.geometry("900x300") # set initial size of the window, remove to auto adjust
+        self.master.minsize(500,300)
+        
         # self.master.columnconfigure(0, weight=1)
         # self.master.rowconfigure(0, weight=1)
         self.create_widgets()
@@ -41,12 +48,14 @@ class Application(tk.Frame):
         self.add_button.grid(row=self.row, column=0)
         self.save_button = tk.Button(self.master, text="Save Changes", command=self.save_config)
         self.save_button.grid(row=self.row, column=1)
+        self.action_button = tk.Button(self.master, text="Make Symlinks", command=self.make_symlinks)
+        self.action_button.grid(row=self.row, column=3)
         self.row += 1
-        self.headerId_label = tk.Label(self.master, text="Id.")
+        self.headerId_label = tk.Label(self.master, text="Id.", width=3)
         self.headerId_label.grid(row=self.row, column=0)
-        self.headerName_label = tk.Label(self.master, text="Name")
+        self.headerName_label = tk.Label(self.master, text="Name", width=4)
         self.headerName_label.grid(row=self.row, column=1)
-        self.headerSymlink_label = tk.Label(self.master, text="Symlink")
+        self.headerSymlink_label = tk.Label(self.master, text="Symlink", width=7)
         self.headerSymlink_label.grid(row=self.row, column=2)
         self.headerFilepath_label = tk.Label(self.master, text="Filepath")
         self.headerFilepath_label.grid(row=self.row, column=3)
@@ -78,9 +87,35 @@ class Application(tk.Frame):
             self.entries.append(entry)
             self.row += 1
 
+    def make_symlinks(self):
+        for entry in self.entries:            
+            source = entry.filepath_var.get()
+            symlink = entry.symlink_var.get()
+            target = SOFT_DIRECTORY / symlink
+            target = target.resolve()
+            print(target)
+            #self.create_windows_symlink(source,target)
+        
+
+    def create_windows_symlink(self,source,target):
+         # Check if the source file exists
+        if not os.path.exists(source):
+            print(f"Error: Source file {source} does not exist")
+            return
+
+        # Check if the target file already exists
+        if os.path.exists(target):
+            print(f"Error: Target file {target} already exists")
+            return
+
+        # Create the symlink using the mklink command
+        os.system(f"mklink \"{target}\" \"{source}\"")
+        print(f"Symlink created from {source} to {target}")
+
     def remove_entry(self, entry):
         # Remove the instance from the entries list
         self.entries.remove(entry)
+        self.row -= 1
 
         # Adjust the row numbering of the remaining instances
         for other_entry in self.entries:
@@ -112,11 +147,11 @@ class EntryForm:
         self.create_widgets()
 
     def create_widgets(self):
-        id_label = tk.Label(self.master, text=str(self.row-1)+'.')
+        id_label = tk.Label(self.master, text=str(self.row-1)+'.', width=3)
         id_label.grid(row=self.row, column=0)
-        name_entry = tk.Entry(self.master, textvariable=self.name_var)
-        name_entry.grid(row=self.row, column=1)
-        symlink_entry = tk.Entry(self.master, textvariable=self.symlink_var)
+        name_entry = tk.Entry(self.master, textvariable=self.name_var, width=10)
+        name_entry.grid(row=self.row, column=1, sticky=tk.E+tk.W)
+        symlink_entry = tk.Entry(self.master, textvariable=self.symlink_var, width=15)
         symlink_entry.grid(row=self.row, column=2)
         filepath_entry = tk.Entry(self.master, textvariable=self.filepath_var, width=70)
         filepath_entry.grid(row=self.row, column=3)
@@ -130,16 +165,10 @@ class EntryForm:
         if filepath:
             self.filepath_var.set(filepath)
 
-    def remove(self):        
+    def remove(self): 
+        print("I am being removed, my ID is: ", self.row-1)       
         self.app.remove_entry(self)
-        # Remove this instance from the UI
-        # for widget in self.master.grid_slaves():
-        #     if int(widget.grid_info()["row"]) == self.row:
-        #         widget.destroy()
-        # # # Adjust the row numbering of the remaining instances
-        # for entry in self.master.entries:
-        #     if entry.row > self.row:
-        #         entry.row -= 1
+
 
 root = tk.Tk()
 app = Application(master=root)
