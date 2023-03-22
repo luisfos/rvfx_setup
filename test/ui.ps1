@@ -103,41 +103,44 @@ $config.Keys | Where-Object { $_ -match "^\w+\.filepath$" } | ForEach-Object {
     }
 }
 
-# Add event handler for add button
+# Add event handler for add software button
 $addButton.Add_Click({
-    $section = Read-Host "Enter software name"
-    if ($section -eq "") { return }
-    $label = New-Object System.Windows.Forms.Label
-    $label.Text = $section
-    $label.Dock = [System.Windows.Forms.DockStyle]::Top
-    $panel.Controls.Add($label)
+    $newSoftwareElement = New-Object System.Windows.Forms.GroupBox
+    $newSoftwareElement.Size = New-Object System.Drawing.Size(600, 70)
+    $newSoftwareElement.Anchor = [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right
+    $newSoftwareElement.Location = New-Object System.Drawing.Point(10, $softwareElements.Count * ($softwareElements[0].Size.Height + 10) + $addButton.Height + 20)
 
-    $filepath = New-Object System.Windows.Forms.TextBox
-    $filepath.Dock = [System.Windows.Forms.DockStyle]::Top
-    $panel.Controls.Add($filepath)
+    $newSoftwareElement.Section = ""
 
-    # $filename
-    $filename = New-Object System.Windows.Forms.TextBox
-    $filename.Dock = [System.Windows.Forms.DockStyle]::Top
-    $panel.Controls.Add($filename)
+    $newSoftwareElement.Filepath = New-Object System.Windows.Forms.TextBox
+    $newSoftwareElement.Filepath.Size = New-Object System.Drawing.Size(300, 20)
+    $newSoftwareElement.Filepath.Location = New-Object System.Drawing.Point(10, 20)
+    $newSoftwareElement.Filepath.Anchor = [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right
+    $newSoftwareElement.Controls.Add($newSoftwareElement.Filepath)
+
+    $newSoftwareElement.Filename = New-Object System.Windows.Forms.TextBox
+    $newSoftwareElement.Filename.Size = New-Object System.Drawing.Size(200, 20)
+    $newSoftwareElement.Filename.Location = New-Object System.Drawing.Point($newSoftwareElement.Filepath.Right + 10, 20)
+    $newSoftwareElement.Filename.Anchor = [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Right
+    $newSoftwareElement.Controls.Add($newSoftwareElement.Filename)
 
     $removeButton = New-Object System.Windows.Forms.Button
+    $removeButton.Size = New-Object System.Drawing.Size(70, 20)
+    $removeButton.Location = New-Object System.Drawing.Point($newSoftwareElement.Filename.Right + 10, 20)
+    $removeButton.Anchor = [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Right
     $removeButton.Text = "Remove"
-    $removeButton.Dock = [System.Windows.Forms.DockStyle]::Top
-    $removeButton.Tag = $section
     $removeButton.Add_Click({
-        $tag = $_.Tag
-        $panel.Controls | Where-Object { $_.Tag -eq $tag } | ForEach-Object { $panel.Controls.Remove($_) }
-        $softwareElements = $softwareElements | Where-Object { $_.Section -ne $tag }
+        $newSoftwareElement.Dispose()
     })
-    $panel.Controls.Add($removeButton)
+    $newSoftwareElement.Controls.Add($removeButton)
 
-    $softwareElements += [PSCustomObject]@{
-        Section = $section
-        Filepath = $filepath
-        Filename = $filename
-    }
+    $softwareElements.Add($newSoftwareElement)
+    $form.Controls.Add($newSoftwareElement)
+    $form.Height += $newSoftwareElement.Height + 10
+    $form.CenterToScreen()
 })
+
+
 
 # Add event handler for save button
 $saveButton.Add_Click({

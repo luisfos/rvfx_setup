@@ -4,7 +4,7 @@ setlocal enabledelayedexpansion
 set "config_file=softs.cfg"
 set "symlink_dir=..\soft"
 
-for /f "usebackq tokens=1,* delims==" %%a in ("%config_file%") do (
+for /f "usebackq tokens=1,* delims==, eol=#" %%a in ("%config_file%") do (
   set "line=%%a="
   if "!line:~0,1!"=="[" (
     set "app_name=!line:~1,-1!"
