@@ -1,3 +1,5 @@
 build/**
 dist/**
 old/**
+python/build**
+python/dist**

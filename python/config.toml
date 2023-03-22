@@ -1,7 +1,0 @@
-[python39]
-filepath = "C:\\Users\\luisf\\AppData\\Local\\Programs\\Python\\Python39\\python.exe"
-symlink = "python39.exe"
-
-[houdini]
-filepath = "path\\to\\hython.exe"
-symlink = "hython.exe"
