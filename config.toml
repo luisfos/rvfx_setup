@@ -1,0 +1,7 @@
+["python39"]
+filepath = 'C:\Users\luisf\AppData\Local\Programs\Python\Python39\python.exe'
+symlink = 'python39.exe'
+
+["houdini"]
+filepath= 'C:\Program Files\Side Effects Software\Houdini 19.5.435\bin\hython.exe'
+symlink = 'hython.exe'
