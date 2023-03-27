@@ -5,6 +5,8 @@ Luis Fos
 TODO:
 cleanup row deletion
 add run script to make the symlinks
+fix filebrowser to select on folder
+fix save changes error on name key
 
 '''
 
